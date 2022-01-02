@@ -11,13 +11,20 @@
   "repository": "kelseasy/web-ext-types",
   "license": "MPL-2.0",
   "devDependencies": {
-    "tslint": "4.5.1",
+    "@typescript-eslint/eslint-plugin": "^5.8.1",
+    "@typescript-eslint/eslint-plugin-tslint": "^5.8.1",
+    "@typescript-eslint/parser": "^5.8.1",
+    "eslint": "^8.6.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-import": "^2.25.3",
+    "eslint-plugin-jsdoc": "^37.5.0",
+    "eslint-plugin-prefer-arrow": "^1.2.3",
     "typescript": "4.5.4"
   },
   "scripts": {
-    "lint": "tslint --project tsconfig.json",
+    "lint": "eslint ./global/**.d.ts",
     "prepublish": "tsc",
-    "test": "tslint --project tsconfig.json && tsc"
+    "test": "eslint ./global/**.d.ts && tsc"
   },
   "types": "global/index.d.ts"
 }

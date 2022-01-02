@@ -32,7 +32,7 @@ type Listener<T> = EvListener<(arg: T) => void>
 /**
  * # JavaScript APIs
  *
- * JavaScript APIs for WebExtensions can be used inside the extension's [background scripts](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Anatomy_of_a_WebExtension#background_scripts) and in any other documents bundled with the extension, including [browser action](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/user_interface/Browser_action) or [page action](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/user_interface/Page_actions) popups, [sidebars](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/user_interface/Sidebars), [options pages](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/user_interface/Options_pages), or [new tab pages](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json/chrome_url_overrides). A few of these APIs can also be accessed by an extension's [content scripts](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Anatomy_of_a_WebExtension#content_scripts). (See the [list in the content script guide](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Content_scripts#webextension_apis).)
+ * JavaScript APIs for WebExtensions can be used inside the extension's [background scripts](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Anatomy_of_a_WebExtension#background_scripts) and in any other documents bundled with the extension, including [browser action](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/user_interface/Browser_action) or [page action](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/user_interface/Page_actions) popups, [sidebars](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/user_interface/Sidebars), [options pages](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/user_interface/Options_pages), or [new tab pages](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json/chrome_url_overrides). A few of these APIs can also be accessed by an extension's [content scripts](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Anatomy_of_a_WebExtension#content_scripts). (See the [list in the content script guide](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Content_scripts#webextension_apis).)
  *
  * To use the more powerful APIs, you need to [request permission](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json/permissions) in your extension's `manifest.json`.
  *
@@ -127,7 +127,7 @@ declare namespace browser {
      */
     type DelayInMinutes = {
       /**
-       * The time the alarm will fire first, given as minutes from the time the alarm is set. If you specify `delayInMinutes`, don't specify `when`.
+       * The time the alarm will fire first, given as minutes from the time the alarm is set. If you specify `delayInMinutes`, don't specify `when`.
        */
       delayInMinutes: number
       /**
@@ -416,7 +416,7 @@ declare namespace browser {
    *
    * Before Firefox 55 this API was also originally named `contextMenus`, and that name has been retained as an alias, so you can use `contextMenus` to write code that works in Firefox and also in other browsers.
    *
-   * To use this API you need to have the `menus`  [permission](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json/permissions). You may also use the `contextMenus` alias instead of `menus`, but if you do, the APIs must be accessed as `browser.contextMenus` instead.
+   * To use this API you need to have the `menus` [permission](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json/permissions). You may also use the `contextMenus` alias instead of `menus`, but if you do, the APIs must be accessed as `browser.contextMenus` instead.
    *
    * Except for [`menus.getTargetElement()`](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/menus/getTargetElement), this API cannot be used from content scripts.
    *
@@ -780,7 +780,7 @@ declare namespace browser {
         parentId?: number | string
 
         /**
-         * Similar to `documentUrlPatterns`, but lets you filter based on the `href` of anchor tags and the `src` attribute of img/audio/video tags. This parameter supports any URL scheme, even those that are usually not allowed in a match pattern.
+         * Similar to `documentUrlPatterns`, but lets you filter based on the `href` of anchor tags and the `src` attribute of img/audio/video tags. This parameter supports any URL scheme, even those that are usually not allowed in a match pattern.
          */
         targetUrlPatterns?: string[]
 
@@ -797,7 +797,7 @@ declare namespace browser {
          *
          * Only the first ampersand will be used to set an access key: subsequent ampersands will not be displayed but will not set keys. So "&A and &B" will be shown as "A and B" and set "A" as the access key.
          *
-         * In some localized versions of Firefox (Japanese and Chinese), the access key is surrounded by parentheses and appended to the menu label, _unless_ the menu title itself already ends with the access key (`"toolkit(&K)"` for example). For more details, see [bug 1647373](https://bugzilla.mozilla.org/show_bug.cgi?id=1647373).
+         * In some localized versions of Firefox (Japanese and Chinese), the access key is surrounded by parentheses and appended to the menu label, _unless_ the menu title itself already ends with the access key (`"toolkit(&K)"` for example). For more details, see [bug 1647373](https://bugzilla.mozilla.org/show_bug.cgi?id=1647373).
          */
         title?: string
 
@@ -837,7 +837,7 @@ declare namespace browser {
      * ```js
      * let elem = browser.menus.getTargetElement(targetElementId);
      * ```
-     * @param targetElementId The property of the ``[`menus.OnClickData`](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/menus/OnClickData)`` object passed to the ``[`menus.onClicked`](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/menus/onClicked)`` handler or ``[`menus.onShown`](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/menus/onShown)`` event.
+     * @param targetElementId The property of the ``[`menus.OnClickData`](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/menus/OnClickData)`` object passed to the ``[`menus.onClicked`](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/menus/onClicked)`` handler or ``[`menus.onShown`](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/menus/onShown)`` event.
      * @returns The element referred to by the `targetElementId` parameter. If the `targetElementId` parameter is not valid, the method returns `null`
      */
     function getTargetElement(targetElementId: number): object | null
@@ -845,7 +845,7 @@ declare namespace browser {
     /**
      * Hide all default Firefox menu items in favor of providing a custom context menu UI.
      *
-     * The overrideContext method will cause the matching menu items from this extension to be shown instead of the default menu. This method should be called from a `[contextmenu](https://developer.mozilla.org/en-US/docs/Web/API/Element/contextmenu_event "/en-US/docs/Web/Events/contextmenu")` DOM event handler, and only applies to the menu that opens after this event.
+     * The overrideContext method will cause the matching menu items from this extension to be shown instead of the default menu. This method should be called from a `[contextmenu](https://developer.mozilla.org/en-US/docs/Web/API/Element/contextmenu_event "/en-US/docs/Web/Events/contextmenu")` DOM event handler, and only applies to the menu that opens after this event.
      *
      * This interface requires the `menus.overrideContext` [permission](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json/permissions).
      *
