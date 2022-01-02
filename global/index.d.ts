@@ -30,6 +30,54 @@ interface EvListener<T extends Function> {
 type Listener<T> = EvListener<(arg: T) => void>
 
 /**
+ * # JavaScript APIs
+ *
+ * JavaScript APIs for WebExtensions can be used inside the extension's [background scripts](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Anatomy_of_a_WebExtension#background_scripts) and in any other documents bundled with the extension, including [browser action](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/user_interface/Browser_action) or [page action](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/user_interface/Page_actions) popups, [sidebars](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/user_interface/Sidebars), [options pages](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/user_interface/Options_pages), or [new tab pages](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json/chrome_url_overrides). A few of these APIs can also be accessed by an extension's [content scripts](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Anatomy_of_a_WebExtension#content_scripts). (See the [list in the content script guide](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Content_scripts#webextension_apis).)
+ *
+ * To use the more powerful APIs, you need to [request permission](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json/permissions) in your extension's `manifest.json`.
+ *
+ * You can access the APIs using the `browser` namespace:
+ *
+ * ```js
+ * function logTabs(tabs) {
+ *   console.log(tabs)
+ * }
+ *
+ * browser.tabs.query({currentWindow: true}, logTabs)
+ * ```
+ * ## [Browser API differences](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API#browser_api_differences "Permalink to Browser API differences")
+ *
+ * Note that this is different from Google Chrome's extension system, which uses the `chrome` namespace instead of `browser`, and which uses callbacks instead of promises for asynchronous functions. As a porting aid, the Firefox implementation of WebExtensions APIs supports `chrome` and callbacks as well as `browser` and promises. Mozilla has also written a polyfill which enables code that uses `browser` and promises to work unchanged in Chrome: [https://github.com/mozilla/webextension-polyfill](https://github.com/mozilla/webextension-polyfill).
+ *
+ * Firefox also implements these APIs under the `chrome` namespace using callbacks. This allows code written for Chrome to run largely unchanged in Firefox for the APIs documented here.
+ *
+ * Microsoft Edge uses the `browser` namespace, but doesn't yet support promise-based asynchronous APIs. In Edge, for the time being, asynchronous APIs must use callbacks.
+ *
+ * Not all browsers support all the APIs: for the details, see [Browser support for JavaScript APIs](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Browser_support_for_JavaScript_APIs) and [Chrome incompatibilities](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Chrome_incompatibilities).
+ *
+ * ## [Examples](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API#examples "Permalink to Examples")
+ *
+ * Throughout the JavaScript API listings, you will find short code examples that illustrate how the API is used. You can experiment using these examples—_without_ needing to create a web extension—using the console in the [Toolbox](https://extensionworkshop.com/documentation/develop/debugging/#developer-tools-toolbox).
+ *
+ * For example, here is the first code example on this page running in the Toolbox console in Firefox Developer Edition:
+ */
+declare namespace browser {
+  /**
+   * **Warning:** If you use `contextMenus`, you must have the `contextMenus`
+   * permission, but if you use `menus`, you must have the `menus` permission.
+   * Both apis are otherwise identical
+   *
+   * Alias to `browser.menus`. Prefer to use that over `contextMenus` for firefox
+   * webextentions in the future.
+   *
+   *
+   * @permission contextMenus
+   * @deprecated
+   */
+  export import contextMenus = browser.menus
+}
+
+/**
  * Schedule code to run at a specific time in the future. This is like [`setTimeout()`](https://developer.mozilla.org/en-US/docs/Web/API/setTimeout) and [`setInterval()`](https://developer.mozilla.org/en-US/docs/Web/API/setInterval), except that those functions don't work with background pages that are loaded on demand.
  *
  * Alarms do not persist across browser sessions. They are created globally across all contexts of a single extension. E.g. alarm created in background script will fire [`onAlarm`](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/alarms/onAlarm) event in background script, options page, popup page and extension tabs (and vice versa). Alarms API is not available in [`Content scripts`](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Content_scripts#webextension_apis).
@@ -1029,6 +1077,8 @@ declare namespace browser.notifications {
 
   const onClicked: Listener<string>
 }
+
+declare namespace browser.menus {}
 
 declare namespace browser.omnibox {
   type OnInputEnteredDisposition =
