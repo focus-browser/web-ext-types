@@ -407,7 +407,150 @@ declare namespace browser {
     const onCommand: Listener<string>
   }
 
+  /**
+   * # menus
+   *
+   * Add items to the browser's menu system.
+   *
+   * This API is modeled on Chrome's ["contextMenus"](https://developer.chrome.com/extensions/contextMenus) API, which enables Chrome extensions to add items to the browser's context menu. The `browser.menus` API adds a few features to Chrome's API.
+   *
+   * Before Firefox 55 this API was also originally named `contextMenus`, and that name has been retained as an alias, so you can use `contextMenus` to write code that works in Firefox and also in other browsers.
+   *
+   * To use this API you need to have the `menus`  [permission](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json/permissions). You may also use the `contextMenus` alias instead of `menus`, but if you do, the APIs must be accessed as `browser.contextMenus` instead.
+   *
+   * Except for [`menus.getTargetElement()`](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/menus/getTargetElement), this API cannot be used from content scripts.
+   *
+   * ## [Creating menu items](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/menus#creating_menu_items "Permalink to Creating menu items")
+   *
+   * To create a menu item call the [`menus.create()`](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/menus/create) method. You pass this method an object containing options for the item, including the item ID, item type, and the contexts in which it should be shown.
+   *
+   * Listen for clicks on your menu item by adding a listener to the [`menus.onClicked`](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/menus/onClicked) event. This listener will be passed a [`menus.OnClickData`](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/menus/OnClickData) object containing the event's details.
+   *
+   * You can create four different types of menu item, based on the value of the `type` property you supply in the options to `create()`:
+   *
+   * -   "normal": a menu item that just displays a label
+   * -   "checkbox": a menu item that represents a binary state. It displays a checkmark next to the label. Clicking the item toggles the checkmark. The click listener will be passed two extra properties: "checked", indicating whether the item is checked now, and "wasChecked", indicating whether the item was checked before the click event.
+   * -   "radio": a menu item that represents one of a group of choices. Just like a checkbox, this also displays a checkmark next to the label, and its click listener is passed "checked" and "wasChecked". However, if you create more than one radio item, then the items function as a group of radio items: only one item in the group can be checked, and clicking an item makes it the checked item.
+   * -   "separator": a line separating a group of items.
+   *
+   * If you have created more than one context menu item or more than one tools menu item, then the items will be placed in a submenu. The submenu's parent will be labeled with the name of the extension. For example, here's an extension called "Menu demo" that's added two context menu items:
+   *
+   * ![](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/menus/menus-1.png)
+   *
+   * ## [Icons](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/menus#icons "Permalink to Icons")
+   *
+   * If you've specified icons for your extension using the ["icons" manifest key](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json/icons), your menu item will display the specified icon next to its label. The browser will try to choose a 16x16 pixel icon for a normal display or a 32x32 pixel icon for a high-density display:
+   *
+   * ![](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/menus/menus-2.png)
+   *
+   * Only for items in a submenu, you can specify custom icons by passing the `icons` option to [`menus.create()`](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/menus/create):
+   *
+   * ![](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/menus/menus-3.png)
+   *
+   * ## [Example](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/menus#example "Permalink to Example")
+   *
+   * Here's a context menu containing 4 items: a normal item, two radio items with separators on each side, and a checkbox. The radio items are given custom icons.
+   *
+   * ![](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/menus/menus-4.png)You could create a submenu like this using code like:
+   *
+   * ```js
+   * browser.menus.create({
+   *   id: "remove-me",
+   *   title: browser.i18n.getMessage("menuItemRemoveMe"),
+   *   contexts: ["all"]
+   * }, onCreated);
+   *
+   * browser.menus.create({
+   *   id: "separator-1",
+   *   type: "separator",
+   *   contexts: ["all"]
+   * }, onCreated);
+   *
+   * browser.menus.create({
+   *   id: "greenify",
+   *   type: "radio",
+   *   title: browser.i18n.getMessage("menuItemGreenify"),
+   *   contexts: ["all"],
+   *   checked: true,
+   *   icons: {
+   *     "16": "icons/paint-green-16.png",
+   *     "32": "icons/paint-green-32.png"
+   *   }
+   * }, onCreated);
+   *
+   * browser.menus.create({
+   *   id: "bluify",
+   *   type: "radio",
+   *   title: browser.i18n.getMessage("menuItemBluify"),
+   *   contexts: ["all"],
+   *   checked: false,
+   *   icons: {
+   *     "16": "icons/paint-blue-16.png",
+   *     "32": "icons/paint-blue-32.png"
+   *   }
+   * }, onCreated);
+   *
+   * browser.menus.create({
+   *   id: "separator-2",
+   *   type: "separator",
+   *   contexts: ["all"]
+   * }, onCreated);
+   *
+   * var checkedState = true;
+   *
+   * browser.menus.create({
+   *   id: "check-uncheck",
+   *   type: "checkbox",
+   *   title: browser.i18n.getMessage("menuItemUncheckMe"),
+   *   contexts: ["all"],
+   *   checked: checkedState
+   * }, onCreated);
+   * ```
+   *
+   * @permission menus
+   */
   export namespace menus {
+    /**
+     * The different contexts a menu item can appear in. Values of this type are strings. The item is displayed when the given context applies. Possible values are:
+     *
+     * ## [Type](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/menus/ContextType#browser_compatibility#type "Permalink to Type")
+     *
+     * Values of this type are strings. The item is displayed when the given context applies. Possible values are:
+     *
+     *  - `all`:Specifying 'all' is equivalent to the combination of all other contexts except for 'bookmark', 'tab' and 'tools\_menu'.
+     *
+     *  - `audio`: Applies when the user context-clicks an [audio](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/audio) element.
+     *
+     *  - `bookmark`: Applies when the user context-clicks a bookmark item in the bookmarks toolbar, bookmarks menu, bookmarks sidebar (`Ctrl + B`) and the Library window (`Ctrl + Shift + B`). The latter two are supported as of Firefox 66. Requires the "bookmarks" [API permission](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json/permissions#api_permissions) in the manifest.
+     *
+     *  - `browser_action`: Applies when the user context-clicks your browser action. The maximum number of items that can be added to the top-level browser action context menu is [`menus.ACTION_MENU_TOP_LEVEL_LIMIT`](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/menus/ACTION_MENU_TOP_LEVEL_LIMIT), but you can add any number of items to submenus.
+     *
+     *  - `editable`: Applies when the user context-clicks an editable element, like a [textarea](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/textarea).
+     *
+     *  - `frame`: Applies when the user context-clicks in a nested [iframe](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/iframe).
+     *
+     *  - `image`: Applies when the user context-clicks an image.
+     *
+     *  - `link`: Applies when the user context-clicks on a link.
+     *
+     *  - `page`: Applies when the user context-clicks in the page, but none of the other page contexts apply (for example, the click is not on an image or a nested iframe or a link).
+     *
+     *  - `page_action`: Applies when the user context-clicks your page action. The maximum number of items that can be added to the top-level page action context menu is [`menus.ACTION_MENU_TOP_LEVEL_LIMIT`](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/menus/ACTION_MENU_TOP_LEVEL_LIMIT), but you can add any number of items to submenus.
+     *
+     *  - `password`: Applies when the user context-clicks on a [password input element](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/password).
+     *
+     *  - `selection`: Applies when part of the page is selected.
+     *
+     *  - `tab`: Applies when the user context-clicks on a tab (specifically, this refers to the tab-strip or other user interface element enabling the user to switch from one browser tab to another, not to the page itself). From Firefox 63, clicking the menu item on a tab grants the [activeTab](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json/permissions#activetab_permission) permission for the tab clicked, even if that isn't the currently active tab.
+     *
+     *  - `tools_menu`: The item will be added to the browser's tools menu. Note that this is only available if you access `ContextType` through the `menus` namespace. It is not available if you access it through the `contextMenus` namespace.
+     *
+     *  - `video`: Applies when the user context-clicks a [video](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/video) element.
+     *
+     * Note that "launcher" is not supported.
+     *
+     * @permission menus
+     */
     type ContextType =
       | 'all'
       | 'audio'
@@ -416,7 +559,8 @@ declare namespace browser {
       | 'editable'
       | 'frame'
       | 'image'
-      // | "launcher" unsupported
+      // Launcher is not supported by firefox
+      // | 'launcher'
       | 'link'
       | 'page'
       | 'page_action'
@@ -426,85 +570,731 @@ declare namespace browser {
       | 'tools_menu'
       | 'video'
 
+    /**
+     * The type of menu item. Values of this type are strings. Possible values are:
+     *
+     * - `normal`: A menu item that just displays a label.
+     *
+     * - `checkbox`: menu item that represents a binary state. It displays a checkmark next to the label. Clicking the item toggles the checkmark. The [`menus.onClicked`](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/menus/onClicked) listener will be passed two extra properties: "checked", indicating whether the item is checked now, and "wasChecked", indicating whether the item was checked before the click event.
+     *
+     * - `radio`: A menu item that represents one of a group of choices. Just like a checkbox, this also displays a checkmark next to the label, and its [`menus.onClicked`](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/menus/onClicked) listener is passed "checked" and "wasChecked". However, if you create more than one radio item, then the items function as a group of radio items: only one item in the group can be checked, and clicking an item makes it the checked item.
+     *
+     * - `separator`: A line separating a group of items.
+     */
     type ItemType = 'normal' | 'checkbox' | 'radio' | 'separator'
 
+    /**
+     * Information passed to the [`menus.onClicked`](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/menus/onClicked) event listener when a menu item is clicked.
+     */
     type OnClickData = {
+      /**
+       * The ID of the bookmark where the context menu was clicked.
+       */
       bookmarkId?: string
+      /**
+       * Which mouse button was pressed. The values are the same as for [`MouseEvent.button`](https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/button).
+       */
+      button?: number
+
+      /**
+       * A flag indicating whether a checkbox or radio item was checked after it was clicked.
+       */
       checked?: boolean
+
+      /**
+       * A flag indicating whether the element is editable: for example, if it is a [textarea](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/textarea).
+       */
       editable: boolean
+
+      /**
+       * The ID of the frame in which the item was clicked. The frame ID can be used in other APIs that accept frame IDs, such as [`tabs.sendMessage()`](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/tabs/sendMessage). If the item was clicked in the top level document, `frameId` is zero. If the item was clicked outside the page entirely (for example, in the `tools_menu` or `tab` context), then `frameId` is `undefined`.
+       */
       frameId?: number
+
+      /**
+       * The ID of the frame in which the item was clicked. The frame ID can be used in other APIs that accept frame IDs, such as [`tabs.sendMessage()`](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/tabs/sendMessage). If the item was clicked in the top level document, `frameId` is zero. If the item was clicked outside the page entirely (for example, in the `tools_menu` or `tab` context), then `frameId` is `undefined`.
+       */
       frameUrl?: string
+
+      /**
+       * If the element is a link, the text for the link. If the link contains no text, the URL itself is given here.
+       */
       linkText?: string
+
+      /**
+       * If the element is a link, the URL it points to.
+       */
       linkUrl?: string
+
+      /**
+       * One of "image", "video", or "audio" if the context menu was activated on one of these types of elements.
+       */
       mediaType?: string
+
+      /**
+       * The ID of the menu item that was clicked
+       */
       menuItemId: number | string
+
+      /**
+       * An array containing any modifier keys that were pressed when the item was clicked. Possible values are: "Alt", "Command", "Ctrl", "MacCtrl", and "Shift". On a Mac, if the user has the Control key pressed, then both "Ctrl" and "MacCtrl" are included.
+       */
       modifiers: string[]
+
+      /**
+       * The URL of the page in which the menu item was clicked. This property is not present if the click occurred in a context where there is no current page, such as on a browser action.
+       */
       pageUrl?: string
+
+      /**
+       * The parent ID, if any, for the item clicked.
+       */
       parentMenuItemId?: number | string
+
+      /**
+       * If some text was selected in the page, this contains the selected text.
+       */
       selectionText?: string
+
+      /**
+       * If present, the `src` value for the media in the clicked element.
+       */
       srcUrl?: string
+
+      /**
+       * An identifier of the element, if any, over which the context menu was created. Use [`menus.getTargetElement()`](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/menus/getTargetElement) in the content script to locate the element. Note that this is not the [id](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/id) attribute of the page element.
+       */
       targetElementId?: number
+
+      /**
+       * The type of extension view.
+       */
+      viewType?: browser.extension.ViewType
+
+      /**
+       * A flag indicating whether a checkbox or radio item was checked before it was clicked.
+       */
       wasChecked?: boolean
     }
 
+    /**
+     * The maximum number of top level extension items that can be added to a menu item whose [`ContextType`](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/menus/ContextType) is "browser\_action" or "page\_action". Any items beyond this limit will be ignored.
+     *
+     * Its value is `6` on Firefox and Chrome.
+     *
+     * For compatibility with other browsers, Firefox makes this property available via the `contextMenus` namespace as well as the `menus` namespace.
+     */
     const ACTION_MENU_TOP_LEVEL_LIMIT: number
 
+    /**
+     * Creates a new menu item, given an options object defining properties for the item.
+     *
+     * Unlike other asynchronous functions, this one does not return a promise, but uses an optional callback to communicate success or failure. This is because its return value is the ID of the new item.
+     *
+     * For compatibility with other browsers, Firefox makes this method available via the `contextMenus` namespace as well as the `menus` namespace. Note though that it's not possible to create tools menu items (`contexts: ["tools_menu"]`) using the `contextMenus` namespace.
+     *
+     * @param createProperties Properties for the new menu item.
+     * @param callback Called when the item has been created. If there were any problems creating the item, details will be available in [`runtime.lastError`](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/runtime/lastError).
+     */
     function create(
       createProperties: {
+        /**
+         * The initial state of a checkbox or radio item: `true` for selected and `false` for unselected. Only one radio item can be selected at a time in a given group of radio items.
+         */
         checked?: boolean
+        /**
+         * String describing an action that should be taken when the user clicks the item. Possible values are:
+         *
+         * -   `"_execute_browser_action"`: simulate a click on the extension's browser action, opening its popup if it has one
+         * -   `"_execute_page_action"`: simulate a click on the extension's page action, opening its popup if it has one
+         * -   `"_execute_sidebar_action"`: open the extension's sidebar
+         *
+         * Clicking the item will still trigger the [`menus.onClicked`](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/menus/onClicked) event, but there's no guarantee of the ordering here: the command may be executed before `onClicked` fires.
+         */
         command?:
           | '_execute_browser_action'
           | '_execute_page_action'
           | '_execute_sidebar_action'
+
+        /**
+         * Array of contexts in which this menu item will appear. If this option is omitted:
+         *
+         * -   if the item's parent has contexts set, then this item will inherit its parent's contexts
+         * -   otherwise, the item is given a context array of \["page"\].
+         */
         contexts?: ContextType[]
+
+        /**
+         * Lets you restrict the item to apply only to documents whose URL matches one of the given [match patterns](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Match_patterns). This applies to frames as well.
+         */
         documentUrlPatterns?: string[]
+
+        /**
+         * Whether this menu item is enabled or disabled. Defaults to `true`.
+         */
         enabled?: boolean
-        icons?: object
+
+        /**
+         * One or more custom icons to display next to the item. Custom icons can only be set for items appearing in submenus. This property is an object with one property for each supplied icon: the property's name should include the icon's size in pixels, and path is relative to the icon from the extension's root directory. The browser tries to choose a 16x16 pixel icon for a normal display or a 32x32 pixel icon for a high-density display. To avoid any scaling, you can specify icons like this:
+         *
+         * ```json
+         * "icons": {
+         *         "16": "path/to/geo-16.png",
+         *         "32": "path/to/geo-32.png"
+         *       }
+         * ```
+         *
+         * One or more custom icons to display next to the item. Custom icons can only be set for items appearing in submenus. This property is an object with one property for each supplied icon: the property's name should include the icon's size in pixels, and path is relative to the icon from the extension's root directory. The browser tries to choose a 16x16 pixel icon for a normal display or a 32x32 pixel icon for a high-density display. To avoid any scaling, you can specify icons like this:
+         *
+         * ```json
+         * "icons": {
+         *         "16": "path/to/geo-16.png",
+         *         "32": "path/to/geo-32.png"
+         *       }
+         * ```
+         *
+         * One or more custom icons to display next to the item. Custom icons can only be set for items appearing in submenus. This property is an object with one property for each supplied icon: the property's name should include the icon's size in pixels, and path is relative to the icon from the extension's root directory. The browser tries to choose a 16x16 pixel icon for a normal display or a 32x32 pixel icon for a high-density display. To avoid any scaling, you can specify icons like this:
+         *
+         * ```json
+         * "icons": {
+         *         "16": "path/to/geo-16.png",
+         *         "32": "path/to/geo-32.png"
+         *       }
+         * ```
+         */
+        icons?: Record<string, string>
+
+        /**
+         * The unique ID to assign to this item. Mandatory for event pages. Cannot be the same as another ID for this extension.
+         */
         id?: string
+
+        /**
+         * A function that will be called when the menu item is clicked. Event pages cannot use this: instead, they should register a listener for [`menus.onClicked`](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/menus/onClicked).
+         */
         onclick?: (info: OnClickData, tab: browser.tabs.Tab) => void
+
+        /**
+         * The ID of a parent menu item; this makes the item a child of a previously added item. Note: If you have created more than one menu item, then the items will be placed in a submenu. The submenu's parent will be labeled with the name of the extension.
+         */
         parentId?: number | string
+
+        /**
+         * Similar to `documentUrlPatterns`, but lets you filter based on the `href` of anchor tags and the `src` attribute of img/audio/video tags. This parameter supports any URL scheme, even those that are usually not allowed in a match pattern.
+         */
         targetUrlPatterns?: string[]
+
+        /**
+         * The text to be displayed in the item. Mandatory unless `type` is "separator".
+         *
+         * You can use "`%s`" in the string. If you do this in a menu item, and some text is selected in the page when the menu is shown, then the selected text will be interpolated into the title. For example, if `title` is "Translate '%s' to Pig Latin" and the user selects the word "cool", then activates the menu, then the menu item's title will be: "Translate 'cool' to Pig Latin".
+         *
+         * If the title contains an ampersand "&" then the next character will be used as an access key for the item, and the ampersand will not be displayed. Exceptions to this are:
+         *
+         * -   If the next character is also an ampersand: then a single ampersand will be displayed and no access key will be set. In effect, "&&" is used to display a single ampersand.
+         * -   If the next characters are the interpolation directive "%s": then the ampersand will not be displayed and no access key will be set.
+         * -   If the ampersand is the last character in the title: then the ampersand will not be displayed and no access key will be set.
+         *
+         * Only the first ampersand will be used to set an access key: subsequent ampersands will not be displayed but will not set keys. So "&A and &B" will be shown as "A and B" and set "A" as the access key.
+         *
+         * In some localized versions of Firefox (Japanese and Chinese), the access key is surrounded by parentheses and appended to the menu label, _unless_ the menu title itself already ends with the access key (`"toolkit(&K)"` for example). For more details, see [bug 1647373](https://bugzilla.mozilla.org/show_bug.cgi?id=1647373).
+         */
         title?: string
+
+        /**
+         * The type of menu item: "normal", "checkbox", "radio", "separator". Defaults to "normal".
+         */
         type?: ItemType
+
+        /**
+         * List of view types where the menu item will be shown. Defaults to any view, including those without a `viewType`
+         */
+        viewTypes?: browser.extension.ViewType[]
+
+        /**
+         * Whether the item is shown in the menu. Defaults to `true`.
+         */
         visible?: boolean
       },
       callback?: () => void
     ): number | string
 
+    /**
+     * # menus.getTargetElement()
+     *
+     * Returns the element for a given `targetElementId`
+     *
+     * This method is available to all extension script contexts (content scripts, background pages and other extension pages) and returns the element for a given `info.targetElementId`, provided that the element still exists in the document where the method is invoked.
+     *
+     * The method only works in the document that includes the right-clicked element and the `targetElementId` expires when the user opens another context menu.
+     *
+     * **Note:** `menus.getTargetElement` only return the requested element if called in the same context as the document that contains the element, for example using content scripts (as shown in the example below).
+     *
+     * An extension requires the "menus" permission to use this API.
+     *
+     * ## [Syntax](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/menus/getTargetElement#syntax "Permalink to Syntax")
+     *
+     * ```js
+     * let elem = browser.menus.getTargetElement(targetElementId);
+     * ```
+     * @param targetElementId The property of the ``[`menus.OnClickData`](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/menus/OnClickData)`` object passed to the ``[`menus.onClicked`](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/menus/onClicked)`` handler or ``[`menus.onShown`](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/menus/onShown)`` event.
+     * @returns The element referred to by the `targetElementId` parameter. If the `targetElementId` parameter is not valid, the method returns `null`
+     */
     function getTargetElement(targetElementId: number): object | null
 
+    /**
+     * Hide all default Firefox menu items in favor of providing a custom context menu UI.
+     *
+     * The overrideContext method will cause the matching menu items from this extension to be shown instead of the default menu. This method should be called from a `[contextmenu](https://developer.mozilla.org/en-US/docs/Web/API/Element/contextmenu_event "/en-US/docs/Web/Events/contextmenu")` DOM event handler, and only applies to the menu that opens after this event.
+     *
+     * This interface requires the `menus.overrideContext` [permission](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json/permissions).
+     *
+     * ## [Examples](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/menus/overrideContext#examples "Permalink to Examples")
+     *
+     * Open the tab context menu on your custom UI, in this case :
+     *
+     * ```
+     * document.addEventListener('contextmenu', event => {
+     *   const foo = event.target.closest('.foo');
+     *   if (foo) {
+     *     // When the context menu is opened on an element with the foo class
+     *     // set the context to "opening a tab context menu".
+     *     browser.menus.overrideContext({
+     *       context: 'tab',
+     *       tabId: parseInt(foo.dataset.tabId)
+     *     });
+     *   }
+     * }, { capture: true });
+     * ```
+     * See [this blog post](https://blog.mozilla.org/addons/2018/11/08/extensions-in-firefox-64/#cm) for more details.
+     *
+     * @param contextOptions Options for how the context menus will be overridden.
+     */
+    function overrideContext(
+      contextOptions: Partial<{
+        /**
+         * Whether to also include default menu items in the menu
+         */
+        showDefaults: boolean
+        /**
+         * ContextType to override, to allow menu items from other extensions in the menu. Currently only `'bookmark'` and `'tab'` are supported. `showDefaults` cannot be used with this option.
+         */
+        context: string
+        /**
+         * Required when context is `'bookmark'`. Requires 'bookmark' permission.
+         */
+        bookmarkId: string
+        /**
+         * Required when context is 'tab'. Requires 'tabs' permission.
+         */
+        tabId: number
+      }>
+    ): void
+
+    /**
+     * Refreshes a menu that's being shown.
+     *
+     * Updates the extension's menu items in the menu that the browser is currently showing, including changes that have been made since the menu was shown. Has no effect if the menu is not being shown. Rebuilding a shown menu is an expensive operation, only invoke this method when necessary.
+     *
+     * This would typically be called from inside a [`menus.onShown`](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/menus/onShown) event handler, after the handler has made any updates to the menu.
+     *
+     * Firefox makes this function available via the `contextMenus` namespace as well as the `menus` namespace.
+     *
+     * This is an asynchronous function that returns a [`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise).
+     */
     function refresh(): Promise<void>
 
+    /**
+     * Removes a menu item.
+     *
+     * For compatibility with other browsers, Firefox makes this method available via the `contextMenus` namespace as well as the `menus` namespace.
+     *
+     * This is an asynchronous function that returns a [`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise).
+     *
+     * ## [Syntax](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/menus/remove#syntax "Permalink to Syntax")
+     *
+     * ```
+     * var removing = browser.menus.remove(
+     *   menuItemId      // integer or string
+     * )
+     * ```
+     *
+     * Removes a menu item.
+     *
+     * For compatibility with other browsers, Firefox makes this method available via the `contextMenus` namespace as well as the `menus` namespace.
+     *
+     * This is an asynchronous function that returns a [`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise).
+     *
+     * ## [Syntax](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/menus/remove#syntax "Permalink to Syntax")
+     *
+     * ```
+     * var removing = browser.menus.remove(
+     *   menuItemId      // integer or string
+     * )
+     * ```
+     * @param menuItemId The ID of the menu item to remove.
+     * @returns A [`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise) that will be fulfilled with no arguments if removal was successful, or rejected with an error message if removal failed (for example, because the item could not be found).
+     */
     function remove(menuItemId: number | string): Promise<void>
 
+    /**
+     * Removes all menu items added by the extension.
+     *
+     * For compatibility with other browsers, Firefox makes this method available via the `contextMenus` namespace as well as the `menus` namespace.
+     *
+     * This is an asynchronous function that returns a [`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise).
+     *
+     * @returns A [`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise) that will be fulfilled with no arguments when all items have been removed.
+     */
     function removeAll(): Promise<void>
 
+    /**
+     * Updates a previously created menu item.
+     *
+     * For compatibility with other browsers, Firefox makes this method available via the `contextMenus` namespace as well as the `menus` namespace.
+     *
+     * This is an asynchronous function that returns a [`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise).
+     *
+     * ## [Syntax](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/menus/update#syntax "Permalink to Syntax")
+     *
+     * ```js
+     * var updating = browser.menus.update(
+     *   id,               // integer or string
+     *   updateProperties // object
+     * )
+     * ```
+     *
+     * @param id The ID of the item to update.
+     * @param updateProperties The properties to update. The same as the `createProperties` object passed to [`menus.create()`](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/menus/create), except that `id` can't be set. In addition, `icons` can only be changed on menu commands, not on the top-level context menu. The top-level icon matches the extension's primary icon as declared in the extension's manifest file.
+     */
     function update(
       id: number | string,
       updateProperties: {
+        /**
+         * The initial state of a checkbox or radio item: `true` for selected and `false` for unselected. Only one radio item can be selected at a time in a given group of radio items.
+         */
         checked?: boolean
+
+        /**
+         * String describing an action that should be taken when the user clicks the item. Possible values are:
+         *
+         * -   `"_execute_browser_action"`: simulate a click on the extension's browser action, opening its popup if it has one
+         * -   `"_execute_page_action"`: simulate a click on the extension's page action, opening its popup if it has one
+         * -   `"_execute_sidebar_action"`: open the extension's sidebar
+         *
+         * Clicking the item will still trigger the [`menus.onClicked`](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/menus/onClicked) event, but there's no guarantee of the ordering here: the command may be executed before `onClicked` fires.
+         */
         command?:
           | '_execute_browser_action'
           | '_execute_page_action'
           | '_execute_sidebar_action'
+
+        /**
+         * Array of contexts in which this menu item will appear. If this option is omitted:
+         *
+         * -   if the item's parent has contexts set, then this item will inherit its parent's contexts
+         * -   otherwise, the item is given a context array of \["page"\].
+         */
         contexts?: ContextType[]
+
+        /**
+         * Lets you restrict the item to apply only to documents whose URL matches one of the given [match patterns](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Match_patterns). This applies to frames as well.
+         */
         documentUrlPatterns?: string[]
+
+        /**
+         * Whether this menu item is enabled or disabled. Defaults to `true`.
+         */
         enabled?: boolean
+
+        /**
+         * One or more custom icons to display next to the item. Custom icons can only be set for items appearing in submenus. This property is an object with one property for each supplied icon: the property's name should include the icon's size in pixels, and path is relative to the icon from the extension's root directory. The browser tries to choose a 16x16 pixel icon for a normal display or a 32x32 pixel icon for a high-density display. To avoid any scaling, you can specify icons like this:
+         *
+         * ```json
+         * "icons": {
+         *       "16": "path/to/geo-16.png",
+         *       "32": "path/to/geo-32.png"
+         *     }
+         * ```
+         *
+         * One or more custom icons to display next to the item. Custom icons can only be set for items appearing in submenus. This property is an object with one property for each supplied icon: the property's name should include the icon's size in pixels, and path is relative to the icon from the extension's root directory. The browser tries to choose a 16x16 pixel icon for a normal display or a 32x32 pixel icon for a high-density display. To avoid any scaling, you can specify icons like this:
+         *
+         * ```json
+         * "icons": {
+         *       "16": "path/to/geo-16.png",
+         *       "32": "path/to/geo-32.png"
+         *     }
+         * ```
+         *
+         * One or more custom icons to display next to the item. Custom icons can only be set for items appearing in submenus. This property is an object with one property for each supplied icon: the property's name should include the icon's size in pixels, and path is relative to the icon from the extension's root directory. The browser tries to choose a 16x16 pixel icon for a normal display or a 32x32 pixel icon for a high-density display. To avoid any scaling, you can specify icons like this:
+         *
+         * ```json
+         * "icons": {
+         *       "16": "path/to/geo-16.png",
+         *       "32": "path/to/geo-32.png"
+         *     }
+         * ```
+         */
+        icons: Record<string, string>
+
+        /**
+         * The unique ID to assign to this item. Mandatory for event pages. Cannot be the same as another ID for this extension.
+         */
+        id: string
+
+        /**
+         * A function that will be called when the menu item is clicked. Event pages cannot use this: instead, they should register a listener for [`menus.onClicked`](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/menus/onClicked).
+         */
         onclick?: (info: OnClickData, tab: browser.tabs.Tab) => void
+
+        /**
+         * The ID of a parent menu item; this makes the item a child of a previously added item. Note: If you have created more than one menu item, then the items will be placed in a submenu. The submenu's parent will be labeled with the name of the extension.
+         */
         parentId?: number | string
+
+        /**
+         * Similar to documentUrlPatterns, but lets you filter based on the href of anchor tags and the src attribute of img/audio/video tags. This parameter supports any URL scheme, even those that are usually not allowed in a match pattern.
+         */
         targetUrlPatterns?: string[]
+
+        /**
+         * The text to be displayed in the item. Mandatory unless `type` is "separator".
+         *
+         * You can use "`%s`" in the string. If you do this in a menu item, and some text is selected in the page when the menu is shown, then the selected text will be interpolated into the title. For example, if `title` is "Translate '%s' to Pig Latin" and the user selects the word "cool", then activates the menu, then the menu item's title will be: "Translate 'cool' to Pig Latin".
+         *
+         * If the title contains an ampersand "&" then the next character will be used as an access key for the item, and the ampersand will not be displayed. Exceptions to this are:
+         *
+         * -   If the next character is also an ampersand: then a single ampersand will be displayed and no access key will be set. In effect, "&&" is used to display a single ampersand.
+         * -   If the next characters are the interpolation directive "%s": then the ampersand will not be displayed and no access key will be set.
+         * -   If the ampersand is the last character in the title: then the ampersand will not be displayed and no access key will be set.
+         *
+         * Only the first ampersand will be used to set an access key: subsequent ampersands will not be displayed but will not set keys. So "&A and &B" will be shown as "A and B" and set "A" as the access key.
+         */
         title?: string
+
+        /**
+         * The type of menu item: "normal", "checkbox", "radio", "separator". Defaults to "normal".
+         */
         type?: ItemType
+
+        /**
+         * List of view types where the menu item will be shown. Defaults to any view, including those without a `viewType`.
+         */
+        viewType?: browser.extension.ViewType[]
+
+        /**
+         * Whether the item is shown in the menu. Defaults to `true`.
+         */
         visible?: boolean
       }
     ): Promise<void>
 
+    /**
+     * # menus.onClicked
+     *
+     * Fired when a menu item is clicked.
+     *
+     * For compatibility with other browsers, Firefox makes this event available via the `contextMenus` namespace as well as the `menus` namespace.
+     *
+     * ## [Syntax](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/menus/onClicked#syntax "Permalink to Syntax")
+     *
+     * ```js
+     * browser.menus.onClicked.addListener(listener)
+     * browser.menus.onClicked.removeListener(listener)
+     * browser.menus.onClicked.hasListener(listener)
+     * ```
+     *
+     * ## Params
+     * - `info`: Information about the item clicked and the context where the click happened.
+     * - `tab`: The details of the tab where the click took place. If the click did not take place in or on a tab, this parameter will be missing.
+     */
     const onClicked: EvListener<
       (info: OnClickData, tab: browser.tabs.Tab) => void
     >
 
+    /**
+     * # menus.onHidden
+     *
+     * Fired when the browser stops displaying a menu: for example because the user clicked outside it or selected an item.
+     *
+     * It is only triggered for menus that can be manipulated using the [`menus`](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/menus) API itself: this includes the context menu, the browser's tools menu, and the bookmarks menu.
+     *
+     * This is most likely to be used in combination with the [`menus.onShown`](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/menus/onShown) and [`menus.refresh()`](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/menus/refresh) APIs: an extension can update the menu when it is shown, then undo the changes when it is hidden.
+     *
+     * Firefox makes this event available via the `contextMenus` namespace as well as the `menus` namespace.
+     */
     const onHidden: EvListener<() => void>
 
+    /**
+     * # menus.onShown
+     *
+     * Fired when the browser has shown a menu.
+     *
+     * An extension can use this event to update its menu items using information that's only available once the menu is shown. Typically an extension will figure out the update in its `onShown` handler and then call [`menus.refresh()`](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/menus/refresh) to update the menu itself.
+     *
+     * The handler can add, remove, or update menu items.
+     *
+     * For example, the [menu-labelled-open](https://github.com/mdn/webextensions-examples/tree/master/menu-labelled-open) example extension adds a menu item that's shown when the user clicks a link, and that, when clicked, just opens the link. It uses `onShown` and `refresh()` to annotate the menu item with the hostname for the link, so the user can easily see where they will go before they click.
+     *
+     * Note that an extension should not take too much time before calling `refresh()`, or the update will be noticeable to the user.
+     *
+     * The handler is passed some information about the menu and its contents, and some information from the page (such as the link and/or selection text). To get access to the information from the page, your extension must have the [host permission](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json/permissions#host_permissions) for it.
+     *
+     * If the `onShown` handler calls any asynchronous APIs, then it's possible that the menu has been closed again before the handler resumes execution. Because of this, if a handler calls any asynchronous APIs, it should check that the menu is still being displayed before it updates the menu. For example:
+     *
+     * ```
+     * var lastMenuInstanceId = 0;
+     * var nextMenuInstanceId = 1;
+     *
+     * browser.menus.onShown.addListener(async function(info, tab) {
+     *   var menuInstanceId = nextMenuInstanceId++;
+     *   lastMenuInstanceId = menuInstanceId;
+     *
+     *   // Call an async function
+     *   await .... ;
+     *
+     *   // After completing the async operation, check whether the menu is still shown.
+     *   if (menuInstanceId !== lastMenuInstanceId) {
+     *     return; // Menu was closed and shown again.
+     *   }
+     *   // Now use menus.create/update + menus.refresh.
+     * });
+     *
+     * browser.menus.onHidden.addListener(function() {
+     *   lastMenuInstanceId = 0;
+     * });
+     * ```
+     *
+     * # menus.onShown
+     *
+     * Fired when the browser has shown a menu.
+     *
+     * An extension can use this event to update its menu items using information that's only available once the menu is shown. Typically an extension will figure out the update in its `onShown` handler and then call [`menus.refresh()`](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/menus/refresh) to update the menu itself.
+     *
+     * The handler can add, remove, or update menu items.
+     *
+     * For example, the [menu-labelled-open](https://github.com/mdn/webextensions-examples/tree/master/menu-labelled-open) example extension adds a menu item that's shown when the user clicks a link, and that, when clicked, just opens the link. It uses `onShown` and `refresh()` to annotate the menu item with the hostname for the link, so the user can easily see where they will go before they click.
+     *
+     * Note that an extension should not take too much time before calling `refresh()`, or the update will be noticeable to the user.
+     *
+     * The handler is passed some information about the menu and its contents, and some information from the page (such as the link and/or selection text). To get access to the information from the page, your extension must have the [host permission](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json/permissions#host_permissions) for it.
+     *
+     * If the `onShown` handler calls any asynchronous APIs, then it's possible that the menu has been closed again before the handler resumes execution. Because of this, if a handler calls any asynchronous APIs, it should check that the menu is still being displayed before it updates the menu. For example:
+     *
+     * ```
+     * var lastMenuInstanceId = 0;
+     * var nextMenuInstanceId = 1;
+     *
+     * browser.menus.onShown.addListener(async function(info, tab) {
+     *   var menuInstanceId = nextMenuInstanceId++;
+     *   lastMenuInstanceId = menuInstanceId;
+     *
+     *   // Call an async function
+     *   await .... ;
+     *
+     *   // After completing the async operation, check whether the menu is still shown.
+     *   if (menuInstanceId !== lastMenuInstanceId) {
+     *     return; // Menu was closed and shown again.
+     *   }
+     *   // Now use menus.create/update + menus.refresh.
+     * });
+     *
+     * browser.menus.onHidden.addListener(function() {
+     *   lastMenuInstanceId = 0;
+     * });
+     * ```
+     *
+     * # menus.onShown
+     *
+     * Fired when the browser has shown a menu.
+     *
+     * An extension can use this event to update its menu items using information that's only available once the menu is shown. Typically an extension will figure out the update in its `onShown` handler and then call [`menus.refresh()`](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/menus/refresh) to update the menu itself.
+     *
+     * The handler can add, remove, or update menu items.
+     *
+     * For example, the [menu-labelled-open](https://github.com/mdn/webextensions-examples/tree/master/menu-labelled-open) example extension adds a menu item that's shown when the user clicks a link, and that, when clicked, just opens the link. It uses `onShown` and `refresh()` to annotate the menu item with the hostname for the link, so the user can easily see where they will go before they click.
+     *
+     * Note that an extension should not take too much time before calling `refresh()`, or the update will be noticeable to the user.
+     *
+     * The handler is passed some information about the menu and its contents, and some information from the page (such as the link and/or selection text). To get access to the information from the page, your extension must have the [host permission](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json/permissions#host_permissions) for it.
+     *
+     * If the `onShown` handler calls any asynchronous APIs, then it's possible that the menu has been closed again before the handler resumes execution. Because of this, if a handler calls any asynchronous APIs, it should check that the menu is still being displayed before it updates the menu. For example:
+     *
+     * ```
+     * var lastMenuInstanceId = 0;
+     * var nextMenuInstanceId = 1;
+     *
+     * browser.menus.onShown.addListener(async function(info, tab) {
+     *   var menuInstanceId = nextMenuInstanceId++;
+     *   lastMenuInstanceId = menuInstanceId;
+     *
+     *   // Call an async function
+     *   await .... ;
+     *
+     *   // After completing the async operation, check whether the menu is still shown.
+     *   if (menuInstanceId !== lastMenuInstanceId) {
+     *     return; // Menu was closed and shown again.
+     *   }
+     *   // Now use menus.create/update + menus.refresh.
+     * });
+     *
+     * browser.menus.onHidden.addListener(function() {
+     *   lastMenuInstanceId = 0;
+     * });
+     * ```
+     *
+     * # menus.onShown
+     *
+     * Fired when the browser has shown a menu.
+     *
+     * An extension can use this event to update its menu items using information that's only available once the menu is shown. Typically an extension will figure out the update in its `onShown` handler and then call [`menus.refresh()`](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/menus/refresh) to update the menu itself.
+     *
+     * The handler can add, remove, or update menu items.
+     *
+     * For example, the [menu-labelled-open](https://github.com/mdn/webextensions-examples/tree/master/menu-labelled-open) example extension adds a menu item that's shown when the user clicks a link, and that, when clicked, just opens the link. It uses `onShown` and `refresh()` to annotate the menu item with the hostname for the link, so the user can easily see where they will go before they click.
+     *
+     * Note that an extension should not take too much time before calling `refresh()`, or the update will be noticeable to the user.
+     *
+     * The handler is passed some information about the menu and its contents, and some information from the page (such as the link and/or selection text). To get access to the information from the page, your extension must have the [host permission](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json/permissions#host_permissions) for it.
+     *
+     * If the `onShown` handler calls any asynchronous APIs, then it's possible that the menu has been closed again before the handler resumes execution. Because of this, if a handler calls any asynchronous APIs, it should check that the menu is still being displayed before it updates the menu. For example:
+     *
+     * ```
+     * var lastMenuInstanceId = 0;
+     * var nextMenuInstanceId = 1;
+     *
+     * browser.menus.onShown.addListener(async function(info, tab) {
+     *   var menuInstanceId = nextMenuInstanceId++;
+     *   lastMenuInstanceId = menuInstanceId;
+     *
+     *   // Call an async function
+     *   await .... ;
+     *
+     *   // After completing the async operation, check whether the menu is still shown.
+     *   if (menuInstanceId !== lastMenuInstanceId) {
+     *     return; // Menu was closed and shown again.
+     *   }
+     *   // Now use menus.create/update + menus.refresh.
+     * });
+     *
+     * browser.menus.onHidden.addListener(function() {
+     *   lastMenuInstanceId = 0;
+     * });
+     * ```
+     *
+     * @param info
+     *
+     * This is just like the [`menus.OnClickData`](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/menus/OnClickData) object, except it contains two extra properties:
+     *
+     * -   `contexts`: an array of all the [`contexts`](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/menus/ContextType) that are applicable to this menu.
+     * -   `menuIds`: an array of IDs of all menu items belonging to this extension that are being shown in this menu.
+     *
+     * Compared with `menus.OnClickData`, the `info` object also omits the `menuItemId` and `modifiers` properties, because of course these are not available until a menu item has been selected.
+     *
+     * The `contexts`, `menuIds`, `frameId`, and `editable` properties are always provided. All the other properties in `info` are only provided if the extension has the [host permission](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json/permissions#host_permissions) for the page.
+     *
+     * @param tab The details of the tab where the click took place. If the click did not take place in or on a tab, this parameter will be missing.
+     */
     const onShown: EvListener<
       (info: OnClickData, tab: browser.tabs.Tab) => void
     >
@@ -861,7 +1651,13 @@ declare namespace browser {
   }
 
   export namespace extension {
-    type ViewType = 'tab' | 'notification' | 'popup'
+    /**
+     * The type of extension view.
+     *
+     * **Warning:** Webkit-based browsers do not conform to standards and do not
+     * implement `sidebar`.
+     */
+    type ViewType = 'tab' | 'notification' | 'popup' | 'sidebar'
 
     const lastError: string | null
     const inIncognitoContext: boolean
@@ -1091,8 +1887,6 @@ declare namespace browser {
 
     const onClicked: Listener<string>
   }
-
-  export namespace menus {}
 
   export namespace omnibox {
     type OnInputEnteredDisposition =
