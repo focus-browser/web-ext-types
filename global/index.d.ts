@@ -37,12 +37,16 @@ type Listener<T> = EvListener<(arg: T) => void>
  * To use this API you need to have the "alarms" [permission](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json/permissions).
  *
  * Docs collected from: https://developer.mozilla.org/en-US/Add-ons/WebExtensions/API/alarms
+ *
+ * @permission alarms
  */
 declare namespace browser.alarms {
   /**
    * Information about a single alarm. This object is returned from [`alarms.get()`](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/alarms/get) and [`alarms.getAll()`](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/alarms/getAll), and is passed into the [`alarms.onAlarm`](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/alarms/onAlarm) listener.
    *
    * Docs collected from: https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/alarms/Alarm
+   *
+   * @permission alarms
    */
   type Alarm = {
     name: string
@@ -54,6 +58,8 @@ declare namespace browser.alarms {
    * You can use this to specify when the alarm will initially fire, either as an absolute value (`when`), or as a delay from the time the alarm is set (`delayInMinutes`). To make the alarm recur, specify `periodInMinutes`.
    *
    * Docs collected from: https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/alarms/create
+   *
+   * @permission alarms
    */
   type When = {
     /**
@@ -65,6 +71,13 @@ declare namespace browser.alarms {
      */
     periodInMinutes?: number
   }
+  /**
+   * You can use this to specify when the alarm will initially fire, either as an absolute value (`when`), or as a delay from the time the alarm is set (`delayInMinutes`). To make the alarm recur, specify `periodInMinutes`.
+   *
+   * Docs collected from: https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/alarms/create
+   *
+   * @permission alarms
+   */
   type DelayInMinutes = {
     /**
      * The time the alarm will fire first, given as minutes from the time the alarm is set. If you specify `delayInMinutes`, don't specify `when`.
@@ -85,6 +98,8 @@ declare namespace browser.alarms {
    *
    * @param name This can be used to refer to a particular alarm in [`alarms.get()`](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/alarms/get) and [`alarms.clear()`](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/alarms/clear). It will also be available in [`alarms.onAlarm`](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/alarms/onAlarm) as the `name` property of the [`alarms.Alarm`](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/alarms/Alarm) object passed into the listener function. Alarm names are unique within the scope of a single extension. If an alarm with an identical name exists, the existing alarm will be cleared and the alarm being created will replace it.
    * @param alarmInfo You can use this to specify when the alarm will initially fire, either as an absolute value (`when`), or as a delay from the time the alarm is set (`delayInMinutes`). To make the alarm recur, specify `periodInMinutes`.
+   *
+   * @permission alarms
    */
   function create(name?: string, alarmInfo?: When | DelayInMinutes): void
 
@@ -92,12 +107,16 @@ declare namespace browser.alarms {
    * Gets an alarm, given its name. This is an asynchronous function that returns a [`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise).
    * @param name The name of the alarm to get. If you don't supply this, the empty string "" will be used.
    * @returns A [`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise) that will be fulfilled with an ``[`Alarm`](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/alarms/Alarm)`` object. This represents the alarm whose name matches `name`. If no alarms match, this will be `undefined`.
+   *
+   * @permission alarms
    */
   function get(name?: string): Promise<Alarm | undefined>
 
   /**
    * Gets all active alarms for the extension. This is an asynchronous function that returns a [`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise).
    * @returns A [`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise) that will be fulfilled with an array of [`Alarm`](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/alarms/Alarm "Information about a single alarm. This object is returned from alarms.get() and alarms.getAll(), and is passed into the alarms.onAlarm listener.") objects. Each of these represents an active alarm that belongs to the extension. If no alarms are active, the array will be empty.
+   *
+   * @permission alarms
    */
   function getAll(): Promise<Alarm[]>
 
@@ -105,17 +124,23 @@ declare namespace browser.alarms {
    * Cancels an alarm, given its name. This is an asynchronous function that returns a [`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise).
    * @param name The name of the alarm to clear. If you don't supply this, the empty string "" will be used.
    * @returns A [`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise) that will be fulfilled with a boolean. This will be `true` if the alarm was cleared, `false` otherwise.
+   *
+   * @permission alarms
    */
   function clear(name?: string): Promise<boolean>
 
   /**
    * Cancels all active alarms. This is an asynchronous function that returns a [`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise).
    * @returns A [`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise) that will be fulfilled with a boolean. This will be `true` if any alarms were cleared, `false` otherwise.
+   *
+   * @permission alarms
    */
   function clearAll(): Promise<boolean>
 
   /**
    * Fired when any alarm set by the extension goes off.
+   *
+   * @permission alarms
    */
   const onAlarm: Listener<Alarm>
 }
