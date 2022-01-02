@@ -1,36 +1,122 @@
+// Code & Type definitions:
+//
 // This Source Code Form is subject to the terms of the Mozilla Public
 // license, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
+//
+// Documentation:
+//
+// Documentation is modified from MDN and thus is under the CC BY-SA 2.5. You
+// can find the license online at:
+// https://creativecommons.org/licenses/by-sa/2.5/legalcode
 
 interface EvListener<T extends Function> {
+  /**
+   * Adds a listener to this event.
+   */
   addListener: (callback: T) => void
+
+  /**
+   * Stop listening to this event. The listener argument is the listener to remove
+   */
   removeListener: (listener: T) => void
+
+  /**
+   * Check whether listener is registered for this event. Returns true if it is listening, false otherwise.
+   */
   hasListener: (listener: T) => boolean
 }
 
 type Listener<T> = EvListener<(arg: T) => void>
 
+/**
+ * Schedule code to run at a specific time in the future. This is like [`setTimeout()`](https://developer.mozilla.org/en-US/docs/Web/API/setTimeout) and [`setInterval()`](https://developer.mozilla.org/en-US/docs/Web/API/setInterval), except that those functions don't work with background pages that are loaded on demand.
+ *
+ * Alarms do not persist across browser sessions. They are created globally across all contexts of a single extension. E.g. alarm created in background script will fire [`onAlarm`](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/alarms/onAlarm) event in background script, options page, popup page and extension tabs (and vice versa). Alarms API is not available in [`Content scripts`](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Content_scripts#webextension_apis).
+ *
+ * To use this API you need to have the "alarms" [permission](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json/permissions).
+ *
+ * Docs collected from: https://developer.mozilla.org/en-US/Add-ons/WebExtensions/API/alarms
+ */
 declare namespace browser.alarms {
+  /**
+   * Information about a single alarm. This object is returned from [`alarms.get()`](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/alarms/get) and [`alarms.getAll()`](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/alarms/getAll), and is passed into the [`alarms.onAlarm`](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/alarms/onAlarm) listener.
+   *
+   * Docs collected from: https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/alarms/Alarm
+   */
   type Alarm = {
     name: string
     scheduledTime: number
     periodInMinutes?: number
   }
 
+  /**
+   * You can use this to specify when the alarm will initially fire, either as an absolute value (`when`), or as a delay from the time the alarm is set (`delayInMinutes`). To make the alarm recur, specify `periodInMinutes`.
+   *
+   * Docs collected from: https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/alarms/create
+   */
   type When = {
-    when?: number
+    /**
+     * The time the alarm will fire first, given as [milliseconds since the epoch](https://en.wikipedia.org/wiki/Unix_time). To get the number of milliseconds between the epoch and the current time, use [`Date.now()`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/now). If you specify `when`, don't specify `delayInMinutes`.
+     */
+    when: number
+    /**
+     * If this is specified, the alarm will fire again every `periodInMinutes` after its initial firing. If you specify this value you may omit both `when` and `delayInMinutes`, and the alarm will then fire initially after `periodInMinutes`. If `periodInMinutes` is not specified, the alarm will only fire once.
+     */
     periodInMinutes?: number
   }
   type DelayInMinutes = {
-    delayInMinutes?: number
+    /**
+     * The time the alarm will fire first, given as minutes from the time the alarm is set. If you specify `delayInMinutes`, don't specify `when`.
+     */
+    delayInMinutes: number
+    /**
+     * If this is specified, the alarm will fire again every `periodInMinutes` after its initial firing. If you specify this value you may omit both `when` and `delayInMinutes`, and the alarm will then fire initially after `periodInMinutes`. If `periodInMinutes` is not specified, the alarm will only fire once.
+     */
     periodInMinutes?: number
   }
+
+  /**
+   * A name for the alarm. Defaults to the empty string.
+   *
+   * This can be used to refer to a particular alarm in [`alarms.get()`](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/alarms/get) and [`alarms.clear()`](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/alarms/clear). It will also be available in [`alarms.onAlarm`](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/alarms/onAlarm) as the `name` property of the [`alarms.Alarm`](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/alarms/Alarm) object passed into the listener function.
+   *
+   * Alarm names are unique within the scope of a single extension. If an alarm with an identical name exists, the existing alarm will be cleared and the alarm being created will replace it.
+   *
+   * @param name This can be used to refer to a particular alarm in [`alarms.get()`](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/alarms/get) and [`alarms.clear()`](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/alarms/clear). It will also be available in [`alarms.onAlarm`](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/alarms/onAlarm) as the `name` property of the [`alarms.Alarm`](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/alarms/Alarm) object passed into the listener function. Alarm names are unique within the scope of a single extension. If an alarm with an identical name exists, the existing alarm will be cleared and the alarm being created will replace it.
+   * @param alarmInfo You can use this to specify when the alarm will initially fire, either as an absolute value (`when`), or as a delay from the time the alarm is set (`delayInMinutes`). To make the alarm recur, specify `periodInMinutes`.
+   */
   function create(name?: string, alarmInfo?: When | DelayInMinutes): void
+
+  /**
+   * Gets an alarm, given its name. This is an asynchronous function that returns a [`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise).
+   * @param name The name of the alarm to get. If you don't supply this, the empty string "" will be used.
+   * @returns A [`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise) that will be fulfilled with an ``[`Alarm`](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/alarms/Alarm)`` object. This represents the alarm whose name matches `name`. If no alarms match, this will be `undefined`.
+   */
   function get(name?: string): Promise<Alarm | undefined>
+
+  /**
+   * Gets all active alarms for the extension. This is an asynchronous function that returns a [`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise).
+   * @returns A [`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise) that will be fulfilled with an array of [`Alarm`](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/alarms/Alarm "Information about a single alarm. This object is returned from alarms.get() and alarms.getAll(), and is passed into the alarms.onAlarm listener.") objects. Each of these represents an active alarm that belongs to the extension. If no alarms are active, the array will be empty.
+   */
   function getAll(): Promise<Alarm[]>
+
+  /**
+   * Cancels an alarm, given its name. This is an asynchronous function that returns a [`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise).
+   * @param name The name of the alarm to clear. If you don't supply this, the empty string "" will be used.
+   * @returns A [`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise) that will be fulfilled with a boolean. This will be `true` if the alarm was cleared, `false` otherwise.
+   */
   function clear(name?: string): Promise<boolean>
+
+  /**
+   * Cancels all active alarms. This is an asynchronous function that returns a [`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise).
+   * @returns A [`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise) that will be fulfilled with a boolean. This will be `true` if any alarms were cleared, `false` otherwise.
+   */
   function clearAll(): Promise<boolean>
 
+  /**
+   * Fired when any alarm set by the extension goes off.
+   */
   const onAlarm: Listener<Alarm>
 }
 
